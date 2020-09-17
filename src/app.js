@@ -9,10 +9,8 @@ app.use(cors());
 
 const repositories = [];
 
-app.get("/repositories", (request, response) => {
-  
+app.get("/repositories", (request, response) => {  
   return response.json(repositories)
-
 });
 
 app.post("/repositories", (request, response) => {
@@ -33,27 +31,70 @@ app.post("/repositories", (request, response) => {
 });
 
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+  
+  const {id} = request.params;
+  
+  const {title, url, techs} = request.body;
+  
+  const index =repositoryIndex(id)
+
+  if (index===-1) { 
+    return response.status(400).json({error: "Update invalido. Repositorio nao existe"})   
+  } 
+
+  const findRepositoryIndex = repositories.findIndex(repository =>
+      repository.id===id
+  );
+  
+  const repository={
+    id,
+    title,
+    url,
+    techs,
+    likes: repositories[findRepositoryIndex].likes 
+  };
+   
+  repositories[findRepositoryIndex]=repository    
+  return response.json(repository)
+  
 });
+
 
 app.delete("/repositories/:id", (request, response) => {
   
-  const {id} = resquest.params
+  const {id} = request.params;
 
   const findRepositoryIndex = repositories.findIndex(repository =>
     repository.id===id
   );
+  
+  const index =repositoryIndex(id)
 
-  if (findRepositoryIndex > 0){
-
-    
+  if (index===-1) { 
+    return response.status(400).json({error: "Delecao invalida. Repositorio nao existe"})
   }
   
+  repositories.splice(findRepositoryIndex,1); 
+
+  return response.status(204).send();
 
 });
 
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const {id}=request.params
+   
+  const index =repositoryIndex(id)
+
+  if (index===-1) {     
+     return response.status(400).json({error: "Update invalido. Repositorio nao existe"})  
+  }
+  repositories[index].likes++
+  return response.json(repositories[index])
+
 });
+
+function repositoryIndex (id) {
+  return repositories.findIndex (repository => repository.id===id )
+}
 
 module.exports = app;
